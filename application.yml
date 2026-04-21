@@ -1,0 +1,6 @@
+logging:
+  file:
+    name: /Users/aditya/Desktop/Aditya/logs/${spring.application.name}.log
+
+  level:
+    root: INFO
