@@ -1,6 +1,9 @@
 logging:
   file:
     name: /Users/aditya/Desktop/Aditya/logs/${spring.application.name}.log
-
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
   level:
     root: INFO
