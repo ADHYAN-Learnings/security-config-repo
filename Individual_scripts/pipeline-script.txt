@@ -1,0 +1,124 @@
+pipeline {
+agent any
+tools {
+    nodejs "node-18"
+}
+environment {
+    DOCKER_USER = "boklu"
+    IMAGE_TAG = "latest"
+}
+stages {
+    stage('Clean Workspace') {
+        steps {
+            deleteDir()
+        }
+    }
+    stage('Clone') {
+        steps {
+            git branch: 'main',
+                credentialsId: 'adhyan_pipeline',
+                url: 'https://github.com/ADHYAN-Learnings/boklu-securities.git'
+        }
+    }
+    stage('Build Backend') {
+        steps {
+            dir('api-gateway') {
+                sh 'chmod +x mvnw && ./mvnw clean package'
+            }
+            dir('riskscoringservice') {
+                sh 'chmod +x mvnw && ./mvnw clean package'
+            }
+            dir('scanmanagementservice') {
+                sh 'chmod +x mvnw && ./mvnw clean package'
+            }
+            dir('scanorchestrationservice') {
+                sh 'chmod +x mvnw && ./mvnw clean package'
+            }
+            dir('security-config-server') {
+                sh 'chmod +x mvnw && ./mvnw clean package'
+            }
+            dir('eureka-server') {
+                sh 'chmod +x mvnw && ./mvnw clean package'
+            }
+        }
+    }
+    stage('Install Frontend Dependencies') {
+        steps {
+            dir('boklu-securities') {
+                sh 'npm install'
+            }
+        }
+    }
+    stage('Build Frontend') {
+        steps {
+            dir('boklu-securities') {
+                sh 'npm run build'
+            }
+        }
+    }
+    stage('Docker Build') {
+        steps {
+             dir('api-gateway') {
+                sh 'docker build --no-cache -t $DOCKER_USER/api-gateway:$IMAGE_TAG .'
+            }
+             dir('riskscoringservice') {
+                sh 'docker build --no-cache -t $DOCKER_USER/riskscoringservice:$IMAGE_TAG .'
+            }
+             dir('scanmanagementservice') {
+                sh 'docker build --no-cache -t $DOCKER_USER/scanmanagementservice:$IMAGE_TAG .'
+            }
+             dir('scanorchestrationservice') {
+                sh 'docker build --no-cache -t $DOCKER_USER/scanorchestrationservice:$IMAGE_TAG .'
+            }
+             dir('security-config-server') {
+                sh 'docker build --no-cache -t $DOCKER_USER/security-config-server:$IMAGE_TAG .'
+            }
+            dir('eureka-server') {
+                sh 'docker build --no-cache -t $DOCKER_USER/eureka-server:$IMAGE_TAG .'
+            }
+             dir('boklu-securities') {
+                sh 'docker build --no-cache -t $DOCKER_USER/boklu-securities:$IMAGE_TAG .'
+            }
+        }
+    }
+    stage('Docker Login') {
+        steps {
+            withCredentials([usernamePassword(
+                credentialsId: 'dockerHub_oauth',
+                usernameVariable: 'USER',
+                passwordVariable: 'PASS')]) {
+                sh 'echo $PASS | docker login -u $USER --password-stdin'
+            }
+        }
+    }
+    stage('Push Images') {
+        steps {
+                sh 'docker push $DOCKER_USER/api-gateway:$IMAGE_TAG'
+                sh 'docker push $DOCKER_USER/riskscoringservice:$IMAGE_TAG'
+                sh 'docker push $DOCKER_USER/scanmanagementservice:$IMAGE_TAG'
+                sh 'docker push $DOCKER_USER/scanorchestrationservice:$IMAGE_TAG'
+                sh 'docker push $DOCKER_USER/security-config-server:$IMAGE_TAG'
+                sh 'docker push $DOCKER_USER/eureka-server:$IMAGE_TAG'
+                sh 'docker push $DOCKER_USER/boklu-securities:$IMAGE_TAG'
+        }
+    }
+    stage('Deploy') {
+        steps {
+           sh 'docker compose down || true'
+           sh 'docker compose pull'
+           sh 'docker compose up -d --build'
+        }
+    }
+}
+post {
+    always {
+        echo 'Pipeline execution completed'
+    }
+    success {
+        echo 'Pipeline executed successfully ✅'
+    }
+    failure {
+        echo 'Pipeline failed ❌'
+    }
+}
+}
