@@ -16,7 +16,7 @@ management:
     export:
       enabled: true
       zipkin:
-        endpoint: http://zipkin:9411/api/v2/scans
+        endpoint: http://zipkin:9411/api/v2/spans
     sampling:
       probability: 1.0
 logging:
