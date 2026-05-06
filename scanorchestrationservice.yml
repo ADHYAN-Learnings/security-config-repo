@@ -13,5 +13,8 @@ management:
     sampling:
       probability: 1.0
 logging:
+  level:
+    root: INFO
+    com.scan.orchestrate: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{traceId},%X{spanId}]" 
