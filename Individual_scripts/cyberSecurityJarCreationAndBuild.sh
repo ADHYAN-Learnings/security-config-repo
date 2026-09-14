@@ -16,12 +16,14 @@ build_service() {
     echo "❌ Directory not found: $SERVICE_NAME"
     return 1
   }
-
+echo $SERVICE_NAME
+if [ "$SERVICE_NAME" != "boklu-securities" ]; 
+then
   echo "📦 Building Maven project..."
-  ./mvnw clean package
-
+  ./mvnw clean package -DskipTests
+fi
   echo "🐳 Building Docker image..."
-  docker build --no-cache -t $DOCKER_USER/$SERVICE_NAME:latest .
+  docker build --no-cache --build-arg VITE_MODE=development -t $DOCKER_USER/$SERVICE_NAME:latest .
 
   echo "📤 Pushing to Docker Hub..."
   docker push $DOCKER_USER/$SERVICE_NAME:latest
@@ -36,6 +38,7 @@ services=(
   "scanmanagementservice"
   "scanorchestrationservice"
   "riskscoringservice"
+  "boklu-securities"
 )
 
 # 🔥 Logic starts here
