@@ -9,6 +9,13 @@ spring:
       path: /h2-console
       settings: 
         web-allow-others: true
+  cloud:
+    openfeigh:
+      cloud:
+        config:
+          scanorchestrationservice:
+            connectTimeout: 5000
+            readTimeout: 1200000
 eureka:
   client:
     service-url:
