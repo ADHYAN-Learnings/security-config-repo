@@ -11,7 +11,7 @@ spring:
         web-allow-others: true
   cloud:
     openfeign:
-      cloud:
+      client:
         config:
           scanorchestrationservice:
             connectTimeout: 50000
