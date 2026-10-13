@@ -10,7 +10,7 @@ spring:
       settings: 
         web-allow-others: true
   cloud:
-    openfeigh:
+    openfeign:
       cloud:
         config:
           scanorchestrationservice:
